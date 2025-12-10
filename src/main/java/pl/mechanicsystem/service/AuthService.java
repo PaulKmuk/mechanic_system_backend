@@ -7,4 +7,5 @@ import pl.mechanicsystem.service.auth.LoginResult;
 public interface AuthService {
 
     LoginResult login(String login, String password);
+    LoginResult refresh(String refreshToken);
 }

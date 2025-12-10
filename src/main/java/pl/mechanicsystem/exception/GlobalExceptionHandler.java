@@ -45,4 +45,34 @@ public class GlobalExceptionHandler {
                 .status(httpStatus)
                 .body(ApiResponse.error(error));
     }
+
+    @ExceptionHandler(RefreshTokenNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRefreshTokenNotFound(RefreshTokenNotFoundException ex) {
+        HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
+
+        ApiError error = new ApiError(
+                httpStatus.value(),
+                ex.getCode(),
+                ex.getMessage(),
+                ex.getDetails()
+        );
+        return ResponseEntity
+                .status(httpStatus)
+                .body(ApiResponse.error(error));
+    }
+
+    @ExceptionHandler(RefreshTokenExpiredException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRefreshTokenExpired(RefreshTokenExpiredException ex) {
+        HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
+
+        ApiError error = new ApiError(
+                httpStatus.value(),
+                ex.getCode(),
+                ex.getMessage(),
+                ex.getDetails()
+        );
+        return ResponseEntity
+                .status(httpStatus)
+                .body(ApiResponse.error(error));
+    }
 }

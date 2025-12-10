@@ -3,6 +3,7 @@ package pl.mechanicsystem.service.impl;
 import org.springframework.stereotype.Service;
 import pl.mechanicsystem.dto.auth.dto.UserAccessPremissionDTO;
 import pl.mechanicsystem.dto.auth.dto.UserDTO;
+import pl.mechanicsystem.entity.MsRefreshtoken;
 import pl.mechanicsystem.entity.MsUser;
 import pl.mechanicsystem.exception.UserNotFoundException;
 import pl.mechanicsystem.repository.MsUserRepository;
@@ -74,6 +75,46 @@ public class AuthServiceImpl implements AuthService {
         return new LoginResult(
                 accessToken,
                 refreshToken,
+                userDTO
+        );
+    }
+
+    @Override
+    public LoginResult refresh(String refreshToken) {
+        // Sprawdzamy czy refresh token aktywny i nie wygasł
+        MsRefreshtoken tokenEntity = refreshTokenService.validateRefreshToken(refreshToken);
+        // Pobieramy userid z refresz token
+        Long userId = tokenEntity.getUsrid();
+        // Pobieramy użytkownika
+        Optional<MsUser> msUser = msUserRepository.findById(userId);
+        if (msUser.isEmpty()) {
+            throw new UserNotFoundException(
+                    "Nie znaleziono użytkownika o ID: " + userId,
+                    "USER_NOT_FOUND",
+                    "User not found for valid refresh token"
+            );
+        }
+        // Pobranie uprawnień (tak jak w login)
+        List<UserAccessPremissionDTO> accessList = loadUserAccess(msUser.get().getGid());
+        UserDTO userDTO = new UserDTO(
+            msUser.get().getGid(),
+            msUser.get().getLogin(),
+            msUser.get().getNam1(),
+            msUser.get().getNam2(),
+            accessList
+        );
+        // Generujemy nowy access_token
+        String accessToken = jwtService.generateAccessToken(
+                msUser.get().getGid(),
+                msUser.get().getLogin(),
+                msUser.get().getNam1()
+        );
+        // Generujemy nowy refresh_token
+        String newRefreshToken = refreshTokenService.createRefreshTokenForUser(msUser.get().getGid());
+
+        return new LoginResult(
+                accessToken,
+                newRefreshToken,
                 userDTO
         );
     }
