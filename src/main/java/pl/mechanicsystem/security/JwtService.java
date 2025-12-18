@@ -93,7 +93,7 @@ public class JwtService {
             @SuppressWarnings("unchecked")
             Map<String, Object> payloadMap = objectMapper.readValue(payloadJson, Map.class);
 
-            Long userId = (Long) payloadMap.get("sub");
+            Long userId = ((Number) payloadMap.get("sub")).longValue();
             String login = (String) payloadMap.get("login");
             String name = (String) payloadMap.get("name");
             Number iatNum = (Number) payloadMap.get("iat");
